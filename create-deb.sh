@@ -66,7 +66,7 @@ for target in ${targets[@]}; do
 
   get-box86-version ver  || error "Failed to get box86 version!"
   get-box86-version commit || error "Failed to get box86 commit!"
-  DEBVER="$(echo "$BOX86VER+$(date +"%F" | sed 's/-//g').$BOX86COMMIT")" || error "Failed to set debver variable."
+  DEBVER="$(echo "$BOX86VER+$(date -u +"%Y%m%dT%H%M%S").$BOX86COMMIT")" || error "Failed to set debver variable."
 
   mkdir doc-pak || error "Failed to create doc-pak dir."
   cp ../docs/README.md ./doc-pak || warning "Failed to add README to docs"
@@ -97,6 +97,11 @@ for target in ${targets[@]}; do
   mv box86/build/*.deb ./debian/ || error "Failed to move deb to debian folder."
 
 done
+
+# only keep last 4 debs for each target
+# keeps github pages builds fast and below 1GB suggested limit
+cd $DIRECTORY
+ls ./debian/box86-*.deb | sort -t '+' -k 2 | head -n -24 | xargs -r rm
 
 rm -rf $DIRECTORY/box86
 
