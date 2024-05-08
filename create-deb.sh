@@ -75,9 +75,22 @@ for target in ${targets[@]}; do
   cp ../docs/X86WINE.md ./doc-pak || error "Failed to add X86WINE to docs"
   cp ../LICENSE ./doc-pak || error "Failed to add LICENSE to docs"
   echo "Box86 lets you run x86 Linux programs (such as games) on non-x86 Linux systems, like ARM (host system needs to be 32bit little-endian)">description-pak || error "Failed to create description-pak."
-  echo "#!/bin/bash
-  echo 'Restarting systemd-binfmt...'
-  systemctl restart systemd-binfmt || true" > postinstall-pak || error "Failed to create postinstall-pak!"
+  echo '#!/bin/bash
+warning() { #yellow text
+  echo -e "\e[93m\e[5m◢◣\e[25m WARNING: $1\e[0m" 1>&2
+}
+# do not touch binfmts inside a container
+if command -v systemd-detect-virt >/dev/null; then
+  if systemd-detect-virt --quiet --container ; then
+    warning "Registering a binfmt cannot be done in a container. This means Box86 will not be automatically summoned to run x86 code, breaking some apps that use it including Steam."
+    exit 0
+  fi
+fi
+if grep -zqs ^container= /proc/1/environ; then
+  warning "Registering a binfmt cannot be done in a container. This means Box86 will not be automatically summoned to run x86 code, breaking some apps that use it including Steam."
+  exit 0
+fi
+systemctl restart systemd-binfmt || warning "Restarting systemd-binfmt failed. This means Box86 will not be automatically summoned to run x86 code, breaking some apps that use it including Steam."' > postinstall-pak || error "Failed to create postinstall-pak!"
 
   conflict_list="qemu-user-static, box86"
   for value in "${targets[@]}"; do
