@@ -19,23 +19,43 @@ Package Name | Notes | Install Command |
 Want me to build for more platforms? Open an issue. 
 
 ### Repository installation
-Involves adding .list file and gpg key for added security.
+Involves adding .sources file and gpg key for added security.
 ```
-sudo wget https://Pi-Apps-Coders.github.io/box86-debs/box86.list -O /etc/apt/sources.list.d/box86.list
-wget -qO- https://Pi-Apps-Coders.github.io/box86-debs/KEY.gpg | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/box86-debs-archive-keyring.gpg 
-sudo apt update && sudo apt install box86-rpi4arm64 -y
+# check if .list file already exists
+if [ -f /etc/apt/sources.list.d/box86.list ]; then
+  sudo rm -f /etc/apt/sources.list.d/box86.list || exit 1
+fi
+# check if .sources file already exists
+if [ -f /etc/apt/sources.list.d/box86.sources ]; then
+  sudo rm -f /etc/apt/sources.list.d/box86.sources || exit 1
+fi
+# download gpg key from specified url
+if [ -f /usr/share/keyrings/box86-archive-keyring.gpg ]; then
+  sudo rm -f /usr/share/keyrings/box86-archive-keyring.gpg
+fi
+sudo mkdir -p /usr/share/keyrings
+wget -qO- "https://pi-apps-coders.github.io/box86-debs/KEY.gpg" | sudo gpg --dearmor -o /usr/share/keyrings/box86-archive-keyring.gpg
+# create .sources file
+echo "Types: deb
+URIs: https://Pi-Apps-Coders.github.io/box86-debs/debian
+Suites: ./
+Signed-By: /usr/share/keyrings/box86-archive-keyring.gpg" | sudo tee /etc/apt/sources.list.d/box86.sources >/dev/null
+```
+
+On a 32bit OS, run the following additional commands
+```
+sudo apt update
+sudo apt install box86-generic-arm -y
+```
+
+On a 64bit OS, run the following additional commands
+```
+sudo dpkg --add-architecture armhf
+sudo apt update
+sudo apt install box86-generic-arm:armhf -y
 ```
 
 If you don't want to add this apt repository to your system, you can download and install the latest armhf deb from [here](https://github.com/Pi-Apps-Coders/box86-debs/tree/master/debian).
-
-### Running box86 on ARM64 Systems
-It's possible to run box86 on an arm64 machine, but you need to add the armhf architecture through dpkg and then the appropriate package with the :armhf tag following. See the below example.
-```
-sudo dpkg --add-architecture armhf
-sudo apt-get update
-# proceed to add the repo using instructions above
-sudo apt-get install box86-rpi4arm64:armhf
-```
 
 ### Note for box64
 
