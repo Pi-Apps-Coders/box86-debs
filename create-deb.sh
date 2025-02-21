@@ -47,8 +47,6 @@ for target in ${targets[@]}; do
 
   cd $DIRECTORY/box86
   sudo rm -rf build && mkdir build && cd build || error "Could not move to build directory"
-  # allow installation even on x86_64 (needed for checkinstall)
-  sed -i "s/NOT _x86 AND NOT _x86_64/true/g" ../CMakeLists.txt
   if [[ $target == "ANDROID" ]]; then
     cmake .. -DARM64=1 -DBAD_SIGNAL=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc-8 -DCMAKE_C_FLAGS=-marm || error "Failed to run cmake."
   else
