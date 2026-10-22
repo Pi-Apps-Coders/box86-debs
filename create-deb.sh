@@ -56,7 +56,7 @@ for target in ${targets[@]}; do
 
   function get-box86-version() {
     if [[ $1 == "ver" ]]; then
-      export BOX86VER="$(qemu-arm-static ./box86 -v | cut -c21-25)"
+      export BOX86VER="$(./box86 -v | cut -c21-25)"
     elif [[ $1 == "commit" ]]; then
       export BOX86COMMIT="$commit"
     fi
